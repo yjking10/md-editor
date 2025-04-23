@@ -46,7 +46,7 @@ onMounted(() => {
   setupFunction();
 
   // 测试
-  // setConfig({
+  // initEditor({
   //   editable: true,
   //   autofocus: true,
   // });
@@ -73,7 +73,9 @@ const sendMessageToNative = (message) => {
   }
 }
 
-const initEditor = (editable, autofocus) => {
+const initEditor = (data) => {
+  const { editable, autofocus, content } = data;
+
 
   editor.value = new Editor({
     extensions: [
@@ -98,7 +100,7 @@ const initEditor = (editable, autofocus) => {
       TextStyle.configure({ types: [ListItem.name] }),
       StarterKit,
     ],
-    content: '',
+    content: content,
     editable: editable,
     autofocus: autofocus,
     onUpdate: () => {
@@ -113,6 +115,8 @@ const initEditor = (editable, autofocus) => {
       sendMessageToNative({ event: 'onFocus' });
     },
     onTransaction: () => {
+      console.log('onTransaction-------');
+
       sendTransactionToNative();
     },
   })
@@ -207,7 +211,7 @@ const sendTransactionToNative = () => {
 
 
 const setupFunction = () => {
-  window.setConfig = setConfig;
+  window.initEditor = initEditor;
   window.setEditorContent = setEditorContent;
   window.getEditorContent = getEditorContent;
   window.toggleBold = toggleBold;
@@ -232,17 +236,10 @@ const setupFunction = () => {
 
 
 
-const setConfig = (data) => {
-  const { editable, autofocus } = data;
-  _editable.value = editable;
 
-  initEditor(editable, autofocus)
-  return true;
-};
 
 // 暴露一个全局函数供 Flutter 调用
 const setEditorContent = (message) => {
-  // const message = JSON.parse(messageJson);
   editor.value.commands.setContent(message || '');
   return true;
 };
