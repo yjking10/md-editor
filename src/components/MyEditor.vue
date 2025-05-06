@@ -25,7 +25,7 @@ import { Markdown } from "tiptap-markdown";
 
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import content from '@/assets/data/test.md?raw'
+// import content from '@/assets/data/test.md?raw'
 
 
 
@@ -51,11 +51,11 @@ onMounted(() => {
   setupFunction();
 
   // 测试
-  initEditor({
-    editable: true,
-    autofocus: true,
-    content: content,
-  });
+  // initEditor({
+  //   editable: true,
+  //   autofocus: true,
+  //   content: content,
+  // });
 
 
 })
@@ -221,7 +221,6 @@ const updateHeight = () => {
     setTimeout(() => {
       if (editorContainer.value) {
         const height = editorContainer.value.offsetHeight;
-        console.log('updateHeight', height);
         sendMessageToNative({ event: 'offsetHeight', data: height + '' });
       }
     }, 100);
