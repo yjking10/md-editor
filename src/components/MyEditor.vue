@@ -1,5 +1,5 @@
 <template>
-  <div v-if="editor" class="editor-container">
+  <div v-if="editor" class="editor-container" ref="editorContainer">
     <editor-content :editor="editor" />
   </div>
 </template>
@@ -35,6 +35,7 @@ const editor = ref()
 const _editable = ref(false)
 const searchTerm = ref("");
 const replaceTerm = ref("");
+const editorContainer = ref()
 // const caseSensitive = ref(false);
 // const autofocusStr = ref('')
 
@@ -113,6 +114,7 @@ const initEditor = (data) => {
     onUpdate: () => {
       const markdownContent = editor.value.storage.markdown.getMarkdown();
       sendMessageToNative({ event: 'onUpdate', data: markdownContent });
+      updateHeight();
     },
     onBlur: () => {
       sendMessageToNative({ event: 'onBlur' });
@@ -122,12 +124,12 @@ const initEditor = (data) => {
       sendMessageToNative({ event: 'onFocus' });
     },
     onTransaction: () => {
-      console.log('onTransaction-------');
 
       sendTransactionToNative();
     },
   })
 
+  updateHeight();
 
 }
 
@@ -135,7 +137,6 @@ const initEditor = (data) => {
 const sendTransactionToNative = () => {
 
   if (editor.value && (_editable.value === true)) {
-    console.log('sendTransactionToNative',);
 
     const msg = {
       'bold': {
@@ -215,6 +216,20 @@ const sendTransactionToNative = () => {
 };
 
 
+const updateHeight = () => {
+  nextTick(() => {
+    setTimeout(() => {
+      if (editorContainer.value) {
+        const height = editorContainer.value.offsetHeight;
+        console.log('updateHeight', height);
+        sendMessageToNative({ event: 'offsetHeight', data: height + '' });
+      }
+    }, 100);
+
+
+
+  });
+};
 
 
 const setupFunction = () => {
