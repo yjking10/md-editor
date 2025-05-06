@@ -16,15 +16,16 @@ import Table from '@tiptap/extension-table';
 import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
+import SearchAndReplace from "@sereneinserenade/tiptap-search-and-replace";
 
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { Markdown } from "tiptap-markdown";
 
 
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-// import content from '@/assets/data/test.md?raw'
+import content from '@/assets/data/test.md?raw'
 
 
 
@@ -32,6 +33,9 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 const editor = ref()
 const _editable = ref(false)
+const searchTerm = ref("");
+const replaceTerm = ref("");
+// const caseSensitive = ref(false);
 // const autofocusStr = ref('')
 
 onMounted(() => {
@@ -46,11 +50,16 @@ onMounted(() => {
   setupFunction();
 
   // 测试
-  // initEditor({
-  //   editable: true,
-  //   autofocus: true,
-  // });
+  initEditor({
+    editable: true,
+    autofocus: true,
+    content: content,
+  });
 
+  nextTick(() => {
+    // editor.value.commands.setContent(content)
+    // editor.value.commands.focus('end')
+  })
 
 })
 
@@ -75,7 +84,7 @@ const sendMessageToNative = (message) => {
 
 const initEditor = (data) => {
   const { editable, autofocus, content } = data;
-
+  _editable.value = editable;
 
   editor.value = new Editor({
     extensions: [
@@ -99,6 +108,8 @@ const initEditor = (data) => {
       TableCell, TableHeader, TableRow,
       TextStyle.configure({ types: [ListItem.name] }),
       StarterKit,
+      SearchAndReplace.configure(),
+
     ],
     content: content,
     editable: editable,
@@ -231,10 +242,16 @@ const setupFunction = () => {
   window.undo = undo;
   window.redo = redo;
   window.triggerBlur = triggerBlur;
+  // 处理搜索替换
+  window.setSearchValue = setSearchValue;
+  window.setReplaceValue = setReplaceValue;
+  window.replace = replace;
+  window.next = next;
+  window.previous = previous;
+  window.clear = clear;
+  window.replaceAll = replaceAll;
 
 }
-
-
 
 
 
@@ -326,6 +343,101 @@ const triggerBlur = () => {
   return true;
 }
 
+// -------------处理搜索替换-----------------
+
+
+const setSearchValue = (value) => {
+  searchTerm.value = value || '';
+};
+const setReplaceValue = (value) => {
+  replaceTerm.value = value || '';
+};
+
+const updateSearchReplace = (clearIndex = false) => {
+  if (!editor.value) return;
+
+  if (clearIndex) editor.value.commands.resetIndex();
+
+  editor.value.commands.setSearchTerm(searchTerm.value);
+  editor.value.commands.setReplaceTerm(replaceTerm.value);
+  // editor.value.commands.setCaseSensitive(caseSensitive.value);
+};
+
+
+const goToSelection = () => {
+  if (!editor.value) return;
+
+  const { results, resultIndex } = editor.value.storage.searchAndReplace;
+  const position = results[resultIndex];
+
+  if (!position) return;
+
+  editor.value.commands.setTextSelection(position);
+
+  const { node } = editor.value.view.domAtPos(
+    editor.value.state.selection.anchor
+  );
+  node instanceof HTMLElement &&
+    node.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
+
+watch(
+  () => searchTerm.value.trim(),
+  (val, oldVal) => {
+    if (!val) clear();
+    if (val !== oldVal) updateSearchReplace(true);
+  }
+);
+
+watch(
+  () => replaceTerm.value.trim(),
+  (val, oldVal) => (val === oldVal ? null : updateSearchReplace())
+);
+
+watch(
+  () => editor.value?.storage?.searchAndReplace?.resultIndex,
+  (val, oldVal) => {
+    if (val !== oldVal) {
+      sendMessageToNative({ event: 'searchResultIndex', data: val + '' });
+    }
+  }
+);
+watch(
+  () => editor.value?.storage?.searchAndReplace?.results.length,
+  (val, oldVal) => {
+    if (val !== oldVal) {
+      sendMessageToNative({ event: 'searchResults', data: val + '' });
+    }
+  }
+);
+
+// watch(
+//   () => caseSensitive.value,
+//   (val, oldVal) => (val === oldVal ? null : updateSearchReplace(true))
+// );
+
+const replace = () => {
+  editor.value?.commands.replace();
+  goToSelection();
+};
+
+const next = () => {
+  editor.value?.commands.nextSearchResult();
+  goToSelection();
+};
+
+const previous = () => {
+  editor.value?.commands.previousSearchResult();
+  goToSelection();
+};
+
+const clear = () => {
+  searchTerm.value = replaceTerm.value = "";
+  editor.value.commands.resetIndex();
+};
+
+const replaceAll = () => editor.value?.commands.replaceAll();
 
 
 </script>
@@ -566,6 +678,14 @@ textarea {
   &.resize-cursor {
     cursor: ew-resize;
     cursor: col-resize;
+  }
+
+  .search-result {
+    background-color: rgba(255, 226, 0, 0.3);
+
+    &-current {
+      background-color: rgba(255, 226, 0, 1);
+    }
   }
 
 }
