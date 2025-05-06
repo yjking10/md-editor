@@ -56,10 +56,6 @@ onMounted(() => {
     content: content,
   });
 
-  nextTick(() => {
-    // editor.value.commands.setContent(content)
-    // editor.value.commands.focus('end')
-  })
 
 })
 
