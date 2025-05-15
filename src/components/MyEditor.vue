@@ -2,6 +2,51 @@
   <div v-if="editor" class="editor-container" ref="editorContainer">
     <editor-content :editor="editor" />
   </div>
+  <div class="comment" v-if="showComment" @click="setGoodValue">
+    <div class="comment-item good" v-show="commentValue !== 2">
+      <div class="icon-text" v-show="commentValue === 0">
+        <svg t="1747295265485" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+          p-id="1835" width="20" height="20">
+          <path style="fill: #FF3B30"
+            d="M51.605333 475.797333l35.242667 405.333334A74.666667 74.666667 0 0 0 161.237333 949.333333h46.208a74.666667 74.666667 0 0 0 74.666667-74.666666V469.333333a74.666667 74.666667 0 0 0-74.666667-74.666666H125.994667a71.658667 71.658667 0 0 0-55.04 24.213333 71.658667 71.658667 0 0 0-19.349334 56.917333zM161.237333 885.333333a9.514667 9.514667 0 0 1-10.624-9.749333l-35.242666-405.333333a10.666667 10.666667 0 0 1 10.624-11.584h81.450666a10.666667 10.666667 0 0 1 10.666667 10.666666v405.333334a9.429333 9.429333 0 0 1-10.666667 10.666666zM346.112 456V874.666667q0 74.666667 74.666667 74.666666h362.389333a68.053333 68.053333 0 0 0 71.850667-54.378666l114.56-405.653334a74.666667 74.666667 0 0 0-71.850667-94.954666H709.12l6.421333-21.461334 0.405334-1.322666a458.730667 458.730667 0 0 0 20.565333-95.552 191.296 191.296 0 0 0-21.610667-111.637334 205.589333 205.589333 0 0 0-80.085333-75.797333 95.146667 95.146667 0 0 0-49.770667-13.824 45.013333 45.013333 0 0 0-46.293333 43.221333 96.021333 96.021333 0 0 0-0.725333 10.688l-0.064 2.368q-5.226667 117.504-37.973334 172.096-26.282667 43.861333-108.309333 82.538667a72.746667 72.746667 0 0 0-45.568 70.336z m67.136 426.218667a10.282667 10.282667 0 0 1-3.136-7.552V456a13.333333 13.333333 0 0 1 8.853333-12.458667q99.626667-46.954667 135.936-107.52 39.594667-66.026667 46.528-192.704l2.858667 1.493334a142.72 142.72 0 0 1 55.722667 52.48 130.773333 130.773333 0 0 1 12.629333 74.794666 402.624 402.624 0 0 1-18.005333 81.088l-0.405334 1.344-18.773333 62.634667q-0.426667 1.493333-0.746667 3.050667-0.298667 1.536-0.448 3.093333-0.149333 1.578667-0.149333 3.136t0.170667 3.136q0.149333 1.578667 0.469333 3.114667t0.768 3.050666q0.469333 1.493333 1.066667 2.944 0.618667 1.450667 1.365333 2.837334t1.621333 2.688q0.853333 1.301333 1.877334 2.517333t2.112 2.325333q1.109333 1.109333 2.346666 2.090667 1.194667 1.002667 2.517334 1.856 1.301333 0.874667 2.688 1.621333t2.858666 1.322667q1.450667 0.597333 2.965334 1.066667a31.808 31.808 0 0 0 9.173333 1.344h231.616a10.666667 10.666667 0 0 1 10.261333 13.546666l-114.56 405.674667a9.728 9.728 0 0 1-10.261333 7.765333H420.778667a10.282667 10.282667 0 0 1-7.530667-3.114666z"
+            p-id="1836"></path>
+        </svg>
+        <span>{{ goodValue }}</span>
+
+      </div>
+
+      <svg v-show="commentValue === 1" t="1747295300808" class="icon" viewBox="0 0 1024 1024" version="1.1"
+        xmlns="http://www.w3.org/2000/svg" p-id="2037" width="20" height="20">
+        <path style="fill: #FF3B30"
+          d="M207.445333 394.666667H125.994667a71.658667 71.658667 0 0 0-55.04 24.213333 71.658667 71.658667 0 0 0-19.349334 56.917333l35.242667 405.333334A74.666667 74.666667 0 0 0 161.237333 949.333333h46.208a74.666667 74.666667 0 0 0 74.666667-74.666666V469.333333a74.666667 74.666667 0 0 0-74.666667-74.666666zM957.269333 423.957333a70.997333 70.997333 0 0 0-59.52-29.632H709.12l6.421333-21.44 0.405334-1.322666a458.688 458.688 0 0 0 20.565333-95.552 191.296 191.296 0 0 0-21.610667-111.637334 205.589333 205.589333 0 0 0-80.085333-75.797333 95.146667 95.146667 0 0 0-49.770667-13.824 45.013333 45.013333 0 0 0-46.293333 43.221333 96 96 0 0 0-0.725333 10.688l-0.064 2.368q-5.226667 117.504-37.973334 172.096-26.282667 43.861333-108.309333 82.538667a72.746667 72.746667 0 0 0-45.568 70.336V874.666667q0 74.666667 74.666667 74.666666h362.389333a68.053333 68.053333 0 0 0 71.850667-54.378666l114.56-405.653334a70.976 70.976 0 0 0-12.309334-65.344z"
+          p-id="2038"></path>
+      </svg>
+
+    </div>
+
+    <div class="comment-gap" v-show="commentValue === 0"></div>
+
+    <div class="comment-item bad" v-show="commentValue !== 1" @click="setBadValue">
+      <div class="icon-text" v-show="commentValue === 0">
+        <svg t="1747295332535" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+          p-id="2209" width="20" height="20">
+          <path style="fill: #65656C"
+            d="M110.890667 94.378667A72.213333 72.213333 0 0 0 87.04 143.146667l-35.541333 426.666666a71.68 71.68 0 0 0 19.456 56.746667A71.68 71.68 0 0 0 125.909333 650.666667h81.621334a74.666667 74.666667 0 0 0 74.666666-74.666667V149.333333a71.936 71.936 0 0 0-21.866666-52.8A71.936 71.936 0 0 0 207.530667 74.666667h-46.08a72.213333 72.213333 0 0 0-50.56 19.712zM150.826667 148.437333a9.514667 9.514667 0 0 1 10.624-9.770666h46.08a10.666667 10.666667 0 0 1 10.666666 10.666666v426.666667a9.429333 9.429333 0 0 1-10.666666 10.666667H125.909333a10.666667 10.666667 0 0 1-10.645333-11.541334zM420.864 74.666667q-74.666667 0-74.666667 74.666666v418.666667a72.746667 72.746667 0 0 0 45.568 70.336q82.026667 38.677333 108.330667 82.538667 32.725333 54.592 37.952 172.096l0.064 2.346666a96 96 0 0 0 0.725333 10.688 45.013333 45.013333 0 0 0 46.293334 43.242667 95.146667 95.146667 0 0 0 49.749333-13.824 205.589333 205.589333 0 0 0 80.106667-75.797333 191.296 191.296 0 0 0 21.610666-111.637334 458.709333 458.709333 0 0 0-20.565333-95.552l-0.405333-1.322666-6.421334-21.461334h188.608a74.666667 74.666667 0 0 0 71.850667-94.933333l-114.56-405.674667A68.053333 68.053333 0 0 0 783.253333 74.666667z m-10.666667 493.333333V149.333333a10.666667 10.666667 0 0 1 10.666667-10.666666h362.389333a9.728 9.728 0 0 1 10.24 7.765333l114.581334 405.674667a10.666667 10.666667 0 0 1-10.261334 13.568H666.197333a31.808 31.808 0 0 0-9.173333 1.344q-1.514667 0.426667-2.986667 1.045333t-2.837333 1.322667q-1.386667 0.746667-2.688 1.621333-1.322667 0.853333-2.538667 1.856-1.216 0.981333-2.346666 2.090667-1.088 1.109333-2.090667 2.346666t-1.877333 2.496q-0.896 1.301333-1.642667 2.688-0.725333 1.386667-1.344 2.837334-0.597333 1.450667-1.066667 2.944-0.469333 1.493333-0.768 3.050666-0.32 1.536-0.469333 3.114667t-0.170667 3.136q0 1.557333 0.149334 3.136 0.149333 1.557333 0.448 3.093333 0.298667 1.557333 0.746666 3.050667l18.773334 62.634667 0.426666 1.344a402.602667 402.602667 0 0 1 17.984 81.066666 130.773333 130.773333 0 0 1-12.629333 74.837334 142.72 142.72 0 0 1-55.722667 52.437333l-2.858666 1.514667q-6.933333-126.677333-46.528-192.725334-36.309333-60.544-135.936-107.52a13.333333 13.333333 0 0 1-8.853334-12.437333z"
+            p-id="2210"></path>
+        </svg>
+        <span>{{ badValue }}</span>
+
+      </div>
+
+      <svg v-show="commentValue === 2" t="1747295342461" class="icon" viewBox="0 0 1024 1024" version="1.1"
+        xmlns="http://www.w3.org/2000/svg" p-id="2411" width="20" height="20">
+        <path style="fill: #65656C"
+          d="M207.530667 74.666667h-46.08A74.666667 74.666667 0 0 0 87.04 143.146667l-35.541333 426.666666a71.68 71.68 0 0 0 19.456 56.746667 71.68 71.68 0 0 0 54.954666 24.106667h81.621334a74.666667 74.666667 0 0 0 74.666666-74.666667V149.333333a71.957333 71.957333 0 0 0-21.866666-52.8A71.936 71.936 0 0 0 207.530667 74.666667zM969.664 534.698667L855.104 129.066667A68.053333 68.053333 0 0 0 783.253333 74.666667H420.864q-74.666667 0-74.666667 74.666666v418.666667a72.725333 72.725333 0 0 0 45.568 70.336q82.026667 38.677333 108.330667 82.538667 32.725333 54.592 37.952 172.096l0.064 2.346666a96 96 0 0 0 0.725333 10.688 45.013333 45.013333 0 0 0 46.293334 43.242667 95.146667 95.146667 0 0 0 49.749333-13.824 205.589333 205.589333 0 0 0 80.106667-75.797333 191.274667 191.274667 0 0 0 21.610666-111.637334 458.666667 458.666667 0 0 0-20.565333-95.552l-0.405333-1.322666-6.421334-21.461334h188.608a74.666667 74.666667 0 0 0 71.850667-94.933333z"
+          p-id="2412"></path>
+      </svg>
+    </div>
+
+  </div>
 </template>
 
 <script setup>
@@ -23,7 +68,7 @@ import { Editor, EditorContent } from '@tiptap/vue-3'
 import { Markdown } from "tiptap-markdown";
 
 
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 // import content from '@/assets/data/test.md?raw'
 
@@ -36,6 +81,10 @@ const _editable = ref(false)
 const searchTerm = ref("");
 const replaceTerm = ref("");
 const editorContainer = ref()
+const showComment = ref(false)
+const commentValue = ref(0)
+const goodValue = ref("");
+const badValue = ref("");
 // const caseSensitive = ref(false);
 // const autofocusStr = ref('')
 
@@ -55,6 +104,10 @@ onMounted(() => {
   //   editable: true,
   //   autofocus: true,
   //   content: content,
+  //   show_comment: true,
+  //   comment_value: 0,
+  //   good_value: "好评",
+  //   bad_value: "差评",
   // });
 
 
@@ -80,8 +133,18 @@ const sendMessageToNative = (message) => {
 }
 
 const initEditor = (data) => {
-  const { editable, autofocus, content } = data;
+
+  const { editable, autofocus, content, show_comment, comment_value, good_value, bad_value } = data;
   _editable.value = editable;
+  console.log('show_comment', show_comment);
+
+  showComment.value = show_comment;
+  commentValue.value = comment_value;
+  goodValue.value = good_value;
+  badValue.value = bad_value;
+
+  console.log('initEditor', editable, autofocus, content);
+
 
   editor.value = new Editor({
     extensions: [
@@ -109,12 +172,12 @@ const initEditor = (data) => {
 
     ],
     content: content,
-    editable: editable,
-    autofocus: autofocus,
+    editable: editable == true || editable == 'true',
+    // autofocus: autofocus,
     onUpdate: () => {
       const markdownContent = editor.value.storage.markdown.getMarkdown();
       sendMessageToNative({ event: 'onUpdate', data: markdownContent });
-      updateHeight();
+      // updateHeight();
     },
     onBlur: () => {
       sendMessageToNative({ event: 'onBlur' });
@@ -129,7 +192,7 @@ const initEditor = (data) => {
     },
   })
 
-  updateHeight();
+  // updateHeight();
 
 }
 
@@ -216,19 +279,19 @@ const sendTransactionToNative = () => {
 };
 
 
-const updateHeight = () => {
-  nextTick(() => {
-    setTimeout(() => {
-      if (editorContainer.value) {
-        const height = editorContainer.value.offsetHeight;
-        sendMessageToNative({ event: 'offsetHeight', data: height + '' });
-      }
-    }, 100);
+// const updateHeight = () => {
+//   nextTick(() => {
+//     setTimeout(() => {
+//       if (editorContainer.value) {
+//         const height = editorContainer.value.offsetHeight;
+//         sendMessageToNative({ event: 'offsetHeight', data: height + '' });
+//       }
+//     }, 100);
 
 
 
-  });
-};
+//   });
+// };
 
 
 const setupFunction = () => {
@@ -448,6 +511,23 @@ const clear = () => {
 };
 
 const replaceAll = () => editor.value?.commands.replaceAll();
+
+
+/// 处理评论
+
+const setGoodValue = () => {
+  if (commentValue.value === 0) {
+    commentValue.value = 1;
+    sendMessageToNative({ event: 'setGoodValue', data: commentValue.value + '' });
+  }
+
+};
+const setBadValue = () => {
+  if (commentValue.value === 0) {
+    commentValue.value = 2;
+    sendMessageToNative({ event: 'setBadValue', data: commentValue.value + '' });
+  }
+};
 
 
 </script>
@@ -698,5 +778,49 @@ textarea {
     }
   }
 
+}
+
+.comment {
+  display: flex;
+  justify-content: center;
+  /* 水平居中 */
+  padding: 24px 0 180px 0;
+
+
+  .comment-item {
+    padding: 10px 26px;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .icon-text {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 14px;
+      color: #65656C;
+
+      span {
+        padding-left: 8px;
+      }
+
+    }
+
+    &.good {
+      background-color: #FFECEB;
+    }
+
+    &.bad {
+      background-color: #F5F6F7;
+    }
+
+
+  }
+
+  .comment-gap {
+    width: 26px;
+    height: 24px;
+  }
 }
 </style>
