@@ -62,6 +62,7 @@ import TableRow from '@tiptap/extension-table-row';
 import TableCell from '@tiptap/extension-table-cell';
 import TableHeader from '@tiptap/extension-table-header';
 import SearchAndReplace from "@sereneinserenade/tiptap-search-and-replace";
+import Image from '@tiptap/extension-image';
 
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
@@ -169,7 +170,7 @@ const initEditor = (data) => {
       TextStyle.configure({ types: [ListItem.name] }),
       StarterKit,
       SearchAndReplace.configure(),
-
+      Image,
     ],
     content: content,
     editable: editable == true || editable == 'true',
@@ -775,6 +776,17 @@ textarea {
 
     &-current {
       background-color: rgba(255, 226, 0, 1);
+    }
+  }
+
+  img {
+    display: block;
+    height: auto;
+    margin: 1.5rem 0;
+    max-width: 100%;
+
+    &.ProseMirror-selectednode {
+      outline: 3px solid var(--purple);
     }
   }
 
