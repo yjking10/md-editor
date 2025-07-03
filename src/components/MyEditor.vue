@@ -71,7 +71,7 @@ import { Markdown } from "tiptap-markdown";
 
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-// import content from '@/assets/data/test.md?raw'
+import content from '@/assets/data/test.md?raw'
 
 
 
@@ -101,15 +101,15 @@ onMounted(() => {
   setupFunction();
 
   // 测试
-  // initEditor({
-  //   editable: true,
-  //   autofocus: true,
-  //   content: content,
-  //   show_comment: true,
-  //   comment_value: 0,
-  //   good_value: "好评",
-  //   bad_value: "差评",
-  // });
+  initEditor({
+    editable: true,
+    autofocus: true,
+    content: content,
+    show_comment: true,
+    comment_value: 0,
+    good_value: "好评",
+    bad_value: "差评",
+  });
 
 
 })
@@ -595,13 +595,20 @@ textarea {
     margin: 1.25rem 1rem 1.25rem 0.4rem;
 
     li p {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
+      margin-top: 0.375rem;
+      margin-bottom: 0.375rem;
     }
   }
 
   strong {
     font-weight: bold;
+  }
+
+  h2+blockquote {
+      background-color: #EBF4F7;
+      padding: 10px;
+      /* 添加内边距使背景更明显 */
+      border-radius: 4px;
   }
 
   /* Task list specific styles */
@@ -644,15 +651,15 @@ textarea {
   h5,
   h6 {
     line-height: 1.5;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
     text-wrap: pretty;
     font-weight: bold
   }
 
   h1,
   h2 {
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-top: 2.125rem;
+    margin-bottom: 0.75rem;
   }
 
   h1 {
@@ -664,7 +671,7 @@ textarea {
   }
 
   h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   h4,
