@@ -2,7 +2,7 @@
   <div v-if="editor" class="editor-container" ref="editorContainer">
     <editor-content :editor="editor" />
   </div>
-  <div class="comment" v-if="showComment" @click="setGoodValue">
+  <div class="comment" v-if="showComment" @click="setGoodValue" ref="commentContainer">
     <div class="comment-item good" v-show="commentValue !== 2">
       <div class="icon-text" v-show="commentValue === 0">
         <svg t="1747295265485" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
@@ -67,6 +67,7 @@ import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { Markdown } from "tiptap-markdown";
+import { nextTick } from 'vue'
 
 
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -82,6 +83,7 @@ const _editable = ref(false)
 const searchTerm = ref("");
 const replaceTerm = ref("");
 const editorContainer = ref()
+const commentContainer = ref()
 const showComment = ref(false)
 const commentValue = ref(0)
 const goodValue = ref("");
@@ -178,7 +180,7 @@ const initEditor = (data) => {
     onUpdate: () => {
       const markdownContent = editor.value.storage.markdown.getMarkdown();
       sendMessageToNative({ event: 'onUpdate', data: markdownContent });
-      // updateHeight();
+       updateHeight();
     },
     onBlur: () => {
       sendMessageToNative({ event: 'onBlur' });
@@ -193,7 +195,7 @@ const initEditor = (data) => {
     },
   })
 
-  // updateHeight();
+   updateHeight();
 
 }
 
@@ -280,19 +282,23 @@ const sendTransactionToNative = () => {
 };
 
 
-// const updateHeight = () => {
-//   nextTick(() => {
-//     setTimeout(() => {
-//       if (editorContainer.value) {
-//         const height = editorContainer.value.offsetHeight;
-//         sendMessageToNative({ event: 'offsetHeight', data: height + '' });
-//       }
-//     }, 100);
+const updateHeight = () => {
+  nextTick(() => {
+    setTimeout(() => {
+      if (editorContainer.value) {
+        var height = editorContainer.value.offsetHeight ;
+        if (commentContainer.value){
+          height += commentContainer.value.offsetHeight;
+        }
+        sendMessageToNative({ event: 'offsetHeight', data: height + '' });
+
+      }
+    }, 100);
 
 
 
-//   });
-// };
+  });
+};
 
 
 const setupFunction = () => {
