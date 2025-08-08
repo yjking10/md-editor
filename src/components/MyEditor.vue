@@ -113,8 +113,17 @@ onMounted(() => {
     bad_value: "差评",
   });
 
+  // 设备适配
+if (/iphone|ipad|ipod|ios/i.test(navigator.userAgent)) {
+  
+} else {
+    // Android：监听点击事件和窗口大小变化
 
+    window.addEventListener('resize', handleAndroidResize);
+}
 })
+
+
 
 onBeforeUnmount(() => {
   editor.value.destroy()
@@ -133,6 +142,20 @@ const sendMessageToNative = (message) => {
   } else {
     console.error("Native handler not available");
   }
+}
+var lastInnerHeight = window.innerHeight;
+// 处理Android设备的窗口大小变化（键盘弹出/收起）
+function handleAndroidResize() {
+    const resizeDiff = lastInnerHeight - window.innerHeight;
+    lastInnerHeight = window.innerHeight;
+
+    // 检测到键盘弹出（高度变化大于200px）
+    if (resizeDiff > 200 && currentInput) {
+        setTimeout(() => {
+            const visualHeight = window.innerHeight;
+            scrollToCursor(visualHeight, window);
+        }, 1500);
+    }
 }
 
 const initEditor = (data) => {
@@ -188,6 +211,11 @@ const initEditor = (data) => {
     onFocus: () => {
 
       sendMessageToNative({ event: 'onFocus' });
+      // scrollToCursor(editor.value);
+        setTimeout(() => {
+            const visualHeight = window.visualViewport?.height || window.innerHeight;
+            scrollToCursor(visualHeight);
+        }, 3000);
     },
     onTransaction: () => {
 
@@ -197,8 +225,85 @@ const initEditor = (data) => {
 
    updateHeight();
 
+     
+
 }
 
+
+
+
+/**
+ * 计算并滚动到光标可见位置
+ * @param {number} visualHeight - 可视区域高度
+ * @param {HTMLElement|Window} scrollObj - 滚动容器
+ */
+function scrollToCursor(visualHeight, scrollObj = window) {
+
+
+
+      const selection = window.getSelection();
+
+            const range = selection.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            // 转换为页面绝对坐标（加上滚动偏移量）
+const cursorTop = rect.top + window.pageYOffset;
+
+    // 获取滚动容器的当前滚动偏移量
+    const scrollTop = scrollObj === window ? window.pageYOffset : scrollObj.scrollTop;
+    // 可视区域的上下边界
+    const visibleTop = scrollTop;
+    const visibleBottom = scrollTop + visualHeight-100;
+
+    // 光标在可视区域上方：向上滚动
+    if (cursorTop < visibleTop) {
+        const targetScroll = cursorTop - visualHeight / 3; // 保留1/3空间
+        scrollObj.scrollTo({
+            top: Math.max(0, targetScroll),
+            behavior: 'smooth'
+        });
+    }
+    // 光标在可视区域下方：向下滚动
+    else if (cursorTop > visibleBottom) {
+        const targetScroll = cursorTop - visualHeight * 2 / 3; // 保留2/3空间
+        scrollObj.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth'
+        });
+    }
+}
+
+// // 处理Android设备的窗口大小变化（键盘弹出/收起）
+// function handleAndroidResize() {
+//     const resizeDiff = lastInnerHeight - window.innerHeight;
+//     lastInnerHeight = window.innerHeight;
+
+//     // 检测到键盘弹出（高度变化大于200px）
+//     if (resizeDiff > 200 && currentInput) {
+//         setTimeout(() => {
+//             const visualHeight = window.innerHeight;
+//             scrollToCursor(visualHeight, window);
+//         }, 150);
+//     }
+// }
+
+// // 设备适配
+// if (/iphone|ipad|ipod|ios/i.test(navigator.userAgent)) {
+//     // iOS：监听focusin事件（键盘弹出时触发）
+//     page.addEventListener('focusin', handleFocusIn);
+// } else {
+//     // Android：监听点击事件和窗口大小变化
+//     page.addEventListener('click', (e) => {
+//         if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
+//             currentInput = e.target;
+//         }
+//     }, true);
+//     window.addEventListener('resize', handleAndroidResize);
+// }
+
+
+    
+
+ 
 // 发送消息到 Flutter
 const sendTransactionToNative = () => {
 
@@ -283,21 +388,23 @@ const sendTransactionToNative = () => {
 
 
 const updateHeight = () => {
-  nextTick(() => {
-    setTimeout(() => {
-      if (editorContainer.value) {
-        var height = editorContainer.value.offsetHeight ;
-        if (commentContainer.value){
-          height += commentContainer.value.offsetHeight;
-        }
-        sendMessageToNative({ event: 'offsetHeight', data: height + '' });
+           nextTick(() => {
+            nextTick(() => {
+              // 等待浏览器完成重绘
+              requestAnimationFrame(() => {
+                setTimeout(() => {
+                  if (editorContainer.value) {
+                    var height = editorContainer.value.offsetHeight;
+                    if (commentContainer.value) {
+                      height += commentContainer.value.offsetHeight;
+                    }
+                    sendMessageToNative({ event: 'offsetHeight', data: height + '' });
 
-      }
-    }, 100);
-
-
-
-  });
+                  }
+                }, 1000);
+              });
+            });
+          });
 };
 
 
@@ -330,6 +437,7 @@ const setupFunction = () => {
   window.previous = previous;
   window.clear = clear;
   window.replaceAll = replaceAll;
+  window.setCommentValue = setCommentValue;
 
 }
 
@@ -338,6 +446,14 @@ const setupFunction = () => {
 // 暴露一个全局函数供 Flutter 调用
 const setEditorContent = (message) => {
   editor.value.commands.setContent(message || '');
+  return true;
+};
+
+
+
+// 暴露一个全局函数供 Flutter 调用
+const setCommentValue= (value) => {
+  commentValue.value = value;
   return true;
 };
 
@@ -597,8 +713,8 @@ textarea {
   /* List styles */
   ul,
   ol {
-    padding: 0 1rem;
-    margin: 1.25rem 1rem 1.25rem 0.4rem;
+    padding: 0 0 0 1rem; /* 只保留左侧内边距，上下右都为0 */
+    margin: 1.25rem 0 1.25rem 0.4rem; /* 只保留上、下、左外边距，右外边距为0 */
 
     li p {
       margin-top: 0.375rem;
