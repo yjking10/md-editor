@@ -44,8 +44,8 @@
           d="M207.530667 74.666667h-46.08A74.666667 74.666667 0 0 0 87.04 143.146667l-35.541333 426.666666a71.68 71.68 0 0 0 19.456 56.746667 71.68 71.68 0 0 0 54.954666 24.106667h81.621334a74.666667 74.666667 0 0 0 74.666666-74.666667V149.333333a71.957333 71.957333 0 0 0-21.866666-52.8A71.936 71.936 0 0 0 207.530667 74.666667zM969.664 534.698667L855.104 129.066667A68.053333 68.053333 0 0 0 783.253333 74.666667H420.864q-74.666667 0-74.666667 74.666666v418.666667a72.725333 72.725333 0 0 0 45.568 70.336q82.026667 38.677333 108.330667 82.538667 32.725333 54.592 37.952 172.096l0.064 2.346666a96 96 0 0 0 0.725333 10.688 45.013333 45.013333 0 0 0 46.293334 43.242667 95.146667 95.146667 0 0 0 49.749333-13.824 205.589333 205.589333 0 0 0 80.106667-75.797333 191.274667 191.274667 0 0 0 21.610666-111.637334 458.666667 458.666667 0 0 0-20.565333-95.552l-0.405333-1.322666-6.421334-21.461334h188.608a74.666667 74.666667 0 0 0 71.850667-94.933333z"
           p-id="2412"></path>
       </svg>
+      
     </div>
-
   </div>
 </template>
 
@@ -72,7 +72,7 @@ import { nextTick } from 'vue'
 
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
-import content from '@/assets/data/test.md?raw'
+// import content from '@/assets/data/test.md?raw'
 
 
 
@@ -103,15 +103,15 @@ onMounted(() => {
   setupFunction();
 
   // 测试
-  initEditor({
-    editable: true,
-    autofocus: true,
-    content: content,
-    show_comment: true,
-    comment_value: 0,
-    good_value: "好评",
-    bad_value: "差评",
-  });
+  // initEditor({
+  //   editable: true,
+  //   autofocus: true,
+  //   content: content,
+  //   show_comment: true,
+  //   comment_value: 0,
+  //   good_value: "好评",
+  //   bad_value: "差评",
+  // });
 
   // 设备适配
 if (/iphone|ipad|ipod|ios/i.test(navigator.userAgent)) {
@@ -121,6 +121,8 @@ if (/iphone|ipad|ipod|ios/i.test(navigator.userAgent)) {
 
     window.addEventListener('resize', handleAndroidResize);
 }
+
+
 })
 
 
@@ -222,10 +224,7 @@ const initEditor = (data) => {
       sendTransactionToNative();
     },
   })
-
    updateHeight();
-
-     
 
 }
 
@@ -388,23 +387,73 @@ const sendTransactionToNative = () => {
 
 
 const updateHeight = () => {
-           nextTick(() => {
-            nextTick(() => {
-              // 等待浏览器完成重绘
-              requestAnimationFrame(() => {
-                setTimeout(() => {
-                  if (editorContainer.value) {
-                    var height = editorContainer.value.offsetHeight;
-                    if (commentContainer.value) {
-                      height += commentContainer.value.offsetHeight;
-                    }
-                    sendMessageToNative({ event: 'offsetHeight', data: height + '' });
+  nextTick(() => {
+    nextTick(() => {
+      // 等待浏览器完成重绘
+      requestAnimationFrame(() => {
+        // 确保所有图片都加载完成后再计算高度
+        const checkImagesLoaded = () => {
+          const images = editorContainer.value?.querySelectorAll('img');
+          if (!images || images.length === 0) {
+            // 没有图片，直接计算高度
+            calculateHeight();
+            return;
+          }
 
+          // 检查所有图片是否都已加载完成
+          const allImagesLoaded = Array.from(images).every(img => img.complete);
+
+          if (allImagesLoaded) {
+            calculateHeight();
+          } else {
+            // 等待图片加载完成
+            let loadedCount = 0;
+            const totalImages = images.length;
+
+            images.forEach(img => {
+              if (img.complete) {
+                loadedCount++;
+              } else {
+                img.addEventListener('load', () => {
+                  loadedCount++;
+                  if (loadedCount === totalImages) {
+                    // 所有图片都加载完成了，延迟一下确保渲染完成
+                    setTimeout(calculateHeight, 100);
                   }
-                }, 1000);
-              });
+                });
+                img.addEventListener('error', () => {
+                  loadedCount++;
+                  if (loadedCount === totalImages) {
+                    // 即使图片加载失败也继续计算高度
+                    setTimeout(calculateHeight, 100);
+                  }
+                });
+              }
             });
-          });
+
+            // 如果所有图片都已经加载完成但loadedCount还没达到totalImages
+            if (loadedCount === totalImages) {
+              calculateHeight();
+            }
+          }
+        };
+
+        const calculateHeight = () => {
+          if (editorContainer.value) {
+            // 使用 scrollHeight 获取内容的完整高度，更适合包含图片的情况
+            var height = editorContainer.value.scrollHeight;
+            if (commentContainer.value) {
+              height += commentContainer.value.offsetHeight;
+            }
+            sendMessageToNative({ event: 'offsetHeight', data: height + '' });
+          }
+        };
+
+        // 先尝试立即计算，如果有图片则等待加载
+        checkImagesLoaded();
+      });
+    });
+  });
 };
 
 
@@ -563,18 +612,24 @@ const updateSearchReplace = (clearIndex = false) => {
 const goToSelection = () => {
   if (!editor.value) return;
 
-  const { results, resultIndex } = editor.value.storage.searchAndReplace;
-  const position = results[resultIndex];
+           const { results, resultIndex } = editor.value.storage.searchAndReplace;
+          const position = results[resultIndex];
 
-  if (!position) return;
+          if (!position) return;
 
-  editor.value.commands.setTextSelection(position);
+          editor.value.commands.setTextSelection(position);
+          const { node } = editor.value.view.domAtPos(
+            editor.value.state.selection.anchor
+          );
 
-  const { node } = editor.value.view.domAtPos(
-    editor.value.state.selection.anchor
-  );
-  node instanceof HTMLElement &&
-    node.scrollIntoView({ behavior: "smooth", block: "center" });
+    
+          sendMessageToNative({ event: 'goToSelection', data: node.offsetTop });
+
+  // const { node } = editor.value.view.domAtPos(
+  //   editor.value.state.selection.anchor
+  // );
+  // node instanceof HTMLElement &&
+  //   node.scrollIntoView({ behavior: "smooth", block: "center" });
 };
 
 
