@@ -2,6 +2,11 @@
   <div v-if="editor" class="editor-container" ref="editorContainer">
     <editor-content :editor="editor" />
   </div>
+
+  <div class="ai-tip" v-show="aiTip && aiTip.length > 0">
+    <span>{{ aiTip }}</span>
+  </div>
+
   <div class="comment" v-if="showComment" @click="setGoodValue">
     <div class="comment-item good" v-show="commentValue !== 2">
       <div class="icon-text" v-show="commentValue === 0">
@@ -37,6 +42,8 @@
         <span>{{ badValue }}</span>
 
       </div>
+
+
 
       <svg v-show="commentValue === 2" t="1747295342461" class="icon" viewBox="0 0 1024 1024" version="1.1"
         xmlns="http://www.w3.org/2000/svg" p-id="2411" width="20" height="20">
@@ -86,6 +93,7 @@ const showComment = ref(false)
 const commentValue = ref(0)
 const goodValue = ref("");
 const badValue = ref("");
+const aiTip = ref("");
 // const caseSensitive = ref(false);
 // const autofocusStr = ref('')
 
@@ -109,6 +117,7 @@ onMounted(() => {
   //   comment_value: 0,
   //   good_value: "好评",
   //   bad_value: "差评",
+  //   ai_tip: "AI 助手正在为您服务",
   // });
 
 
@@ -135,7 +144,7 @@ const sendMessageToNative = (message) => {
 
 const initEditor = (data) => {
 
-  const { editable, autofocus, content, show_comment, comment_value, good_value, bad_value } = data;
+  const { editable, autofocus, content, show_comment, comment_value, good_value, bad_value, ai_tip } = data;
   _editable.value = editable;
   console.log('show_comment', show_comment);
 
@@ -143,7 +152,7 @@ const initEditor = (data) => {
   commentValue.value = comment_value;
   goodValue.value = good_value;
   badValue.value = bad_value;
-
+  aiTip.value = ai_tip;
   console.log('initEditor', editable, autofocus, content);
 
 
@@ -789,6 +798,15 @@ textarea {
       outline: 3px solid var(--purple);
     }
   }
+
+}
+
+.ai-tip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: #65656C;
 
 }
 
