@@ -3,11 +3,13 @@
     <editor-content :editor="editor" />
   </div>
 
+
   <div class="ai-tip" v-show="aiTip && aiTip.length > 0">
     <span>{{ aiTip }}</span>
   </div>
 
-  <div class="comment" v-if="showComment" @click="setGoodValue">
+  <div class="comment" v-if="showComment" @click="setGoodValue" ref="commentContainer">
+
     <div class="comment-item good" v-show="commentValue !== 2">
       <div class="icon-text" v-show="commentValue === 0">
         <svg t="1747295265485" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
@@ -51,8 +53,8 @@
           d="M207.530667 74.666667h-46.08A74.666667 74.666667 0 0 0 87.04 143.146667l-35.541333 426.666666a71.68 71.68 0 0 0 19.456 56.746667 71.68 71.68 0 0 0 54.954666 24.106667h81.621334a74.666667 74.666667 0 0 0 74.666666-74.666667V149.333333a71.957333 71.957333 0 0 0-21.866666-52.8A71.936 71.936 0 0 0 207.530667 74.666667zM969.664 534.698667L855.104 129.066667A68.053333 68.053333 0 0 0 783.253333 74.666667H420.864q-74.666667 0-74.666667 74.666666v418.666667a72.725333 72.725333 0 0 0 45.568 70.336q82.026667 38.677333 108.330667 82.538667 32.725333 54.592 37.952 172.096l0.064 2.346666a96 96 0 0 0 0.725333 10.688 45.013333 45.013333 0 0 0 46.293334 43.242667 95.146667 95.146667 0 0 0 49.749333-13.824 205.589333 205.589333 0 0 0 80.106667-75.797333 191.274667 191.274667 0 0 0 21.610666-111.637334 458.666667 458.666667 0 0 0-20.565333-95.552l-0.405333-1.322666-6.421334-21.461334h188.608a74.666667 74.666667 0 0 0 71.850667-94.933333z"
           p-id="2412"></path>
       </svg>
-    </div>
 
+    </div>
   </div>
 </template>
 
@@ -74,6 +76,7 @@ import Image from '@tiptap/extension-image';
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import { Markdown } from "tiptap-markdown";
+import { nextTick } from 'vue'
 
 
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
@@ -89,6 +92,7 @@ const _editable = ref(false)
 const searchTerm = ref("");
 const replaceTerm = ref("");
 const editorContainer = ref()
+const commentContainer = ref()
 const showComment = ref(false)
 const commentValue = ref(0)
 const goodValue = ref("");
@@ -120,8 +124,19 @@ onMounted(() => {
   //   ai_tip: "AI 助手正在为您服务",
   // });
 
+  // 设备适配
+  if (/iphone|ipad|ipod|ios/i.test(navigator.userAgent)) {
+
+  } else {
+    // Android：监听点击事件和窗口大小变化
+
+    window.addEventListener('resize', handleAndroidResize);
+  }
+
 
 })
+
+
 
 onBeforeUnmount(() => {
   editor.value.destroy()
@@ -139,6 +154,20 @@ const sendMessageToNative = (message) => {
     window.waveNoteBridge.postMessage(JSON.stringify(message));
   } else {
     console.error("Native handler not available");
+  }
+}
+var lastInnerHeight = window.innerHeight;
+// 处理Android设备的窗口大小变化（键盘弹出/收起）
+function handleAndroidResize() {
+  const resizeDiff = lastInnerHeight - window.innerHeight;
+  lastInnerHeight = window.innerHeight;
+
+  // 检测到键盘弹出（高度变化大于200px）
+  if (resizeDiff > 200 && currentInput) {
+    setTimeout(() => {
+      const visualHeight = window.innerHeight;
+      scrollToCursor(visualHeight, window);
+    }, 1500);
   }
 }
 
@@ -187,7 +216,7 @@ const initEditor = (data) => {
     onUpdate: () => {
       const markdownContent = editor.value.storage.markdown.getMarkdown();
       sendMessageToNative({ event: 'onUpdate', data: markdownContent });
-      // updateHeight();
+      updateHeight();
     },
     onBlur: () => {
       sendMessageToNative({ event: 'onBlur' });
@@ -195,16 +224,95 @@ const initEditor = (data) => {
     onFocus: () => {
 
       sendMessageToNative({ event: 'onFocus' });
+      // scrollToCursor(editor.value);
+      setTimeout(() => {
+        const visualHeight = window.visualViewport?.height || window.innerHeight;
+        scrollToCursor(visualHeight);
+      }, 3000);
     },
     onTransaction: () => {
 
       sendTransactionToNative();
     },
   })
-
-  // updateHeight();
+  updateHeight();
 
 }
+
+
+
+
+/**
+ * 计算并滚动到光标可见位置
+ * @param {number} visualHeight - 可视区域高度
+ * @param {HTMLElement|Window} scrollObj - 滚动容器
+ */
+function scrollToCursor(visualHeight, scrollObj = window) {
+
+
+
+  const selection = window.getSelection();
+
+  const range = selection.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  // 转换为页面绝对坐标（加上滚动偏移量）
+  const cursorTop = rect.top + window.pageYOffset;
+
+  // 获取滚动容器的当前滚动偏移量
+  const scrollTop = scrollObj === window ? window.pageYOffset : scrollObj.scrollTop;
+  // 可视区域的上下边界
+  const visibleTop = scrollTop;
+  const visibleBottom = scrollTop + visualHeight - 100;
+
+  // 光标在可视区域上方：向上滚动
+  if (cursorTop < visibleTop) {
+    const targetScroll = cursorTop - visualHeight / 3; // 保留1/3空间
+    scrollObj.scrollTo({
+      top: Math.max(0, targetScroll),
+      behavior: 'smooth'
+    });
+  }
+  // 光标在可视区域下方：向下滚动
+  else if (cursorTop > visibleBottom) {
+    const targetScroll = cursorTop - visualHeight * 2 / 3; // 保留2/3空间
+    scrollObj.scrollTo({
+      top: targetScroll,
+      behavior: 'smooth'
+    });
+  }
+}
+
+// // 处理Android设备的窗口大小变化（键盘弹出/收起）
+// function handleAndroidResize() {
+//     const resizeDiff = lastInnerHeight - window.innerHeight;
+//     lastInnerHeight = window.innerHeight;
+
+//     // 检测到键盘弹出（高度变化大于200px）
+//     if (resizeDiff > 200 && currentInput) {
+//         setTimeout(() => {
+//             const visualHeight = window.innerHeight;
+//             scrollToCursor(visualHeight, window);
+//         }, 150);
+//     }
+// }
+
+// // 设备适配
+// if (/iphone|ipad|ipod|ios/i.test(navigator.userAgent)) {
+//     // iOS：监听focusin事件（键盘弹出时触发）
+//     page.addEventListener('focusin', handleFocusIn);
+// } else {
+//     // Android：监听点击事件和窗口大小变化
+//     page.addEventListener('click', (e) => {
+//         if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') {
+//             currentInput = e.target;
+//         }
+//     }, true);
+//     window.addEventListener('resize', handleAndroidResize);
+// }
+
+
+
+
 
 // 发送消息到 Flutter
 const sendTransactionToNative = () => {
@@ -289,19 +397,75 @@ const sendTransactionToNative = () => {
 };
 
 
-// const updateHeight = () => {
-//   nextTick(() => {
-//     setTimeout(() => {
-//       if (editorContainer.value) {
-//         const height = editorContainer.value.offsetHeight;
-//         sendMessageToNative({ event: 'offsetHeight', data: height + '' });
-//       }
-//     }, 100);
+const updateHeight = () => {
+  nextTick(() => {
+    nextTick(() => {
+      // 等待浏览器完成重绘
+      requestAnimationFrame(() => {
+        // 确保所有图片都加载完成后再计算高度
+        const checkImagesLoaded = () => {
+          const images = editorContainer.value?.querySelectorAll('img');
+          if (!images || images.length === 0) {
+            // 没有图片，直接计算高度
+            calculateHeight();
+            return;
+          }
 
+          // 检查所有图片是否都已加载完成
+          const allImagesLoaded = Array.from(images).every(img => img.complete);
 
+          if (allImagesLoaded) {
+            calculateHeight();
+          } else {
+            // 等待图片加载完成
+            let loadedCount = 0;
+            const totalImages = images.length;
 
-//   });
-// };
+            images.forEach(img => {
+              if (img.complete) {
+                loadedCount++;
+              } else {
+                img.addEventListener('load', () => {
+                  loadedCount++;
+                  if (loadedCount === totalImages) {
+                    // 所有图片都加载完成了，延迟一下确保渲染完成
+                    setTimeout(calculateHeight, 100);
+                  }
+                });
+                img.addEventListener('error', () => {
+                  loadedCount++;
+                  if (loadedCount === totalImages) {
+                    // 即使图片加载失败也继续计算高度
+                    setTimeout(calculateHeight, 100);
+                  }
+                });
+              }
+            });
+
+            // 如果所有图片都已经加载完成但loadedCount还没达到totalImages
+            if (loadedCount === totalImages) {
+              calculateHeight();
+            }
+          }
+        };
+
+        const calculateHeight = () => {
+          if (editorContainer.value) {
+            // 使用 scrollHeight 获取内容的完整高度，更适合包含图片的情况
+            var height = editorContainer.value.scrollHeight;
+            if (commentContainer.value) {
+              height += commentContainer.value.offsetHeight;
+            }
+            sendMessageToNative({ event: 'offsetHeight', data: height + '' });
+          }
+        };
+
+        // 先尝试立即计算，如果有图片则等待加载
+        checkImagesLoaded();
+      });
+    });
+  });
+};
 
 
 const setupFunction = () => {
@@ -333,6 +497,7 @@ const setupFunction = () => {
   window.previous = previous;
   window.clear = clear;
   window.replaceAll = replaceAll;
+  window.setCommentValue = setCommentValue;
 
 }
 
@@ -341,6 +506,14 @@ const setupFunction = () => {
 // 暴露一个全局函数供 Flutter 调用
 const setEditorContent = (message) => {
   editor.value.commands.setContent(message || '');
+  return true;
+};
+
+
+
+// 暴露一个全局函数供 Flutter 调用
+const setCommentValue = (value) => {
+  commentValue.value = value;
   return true;
 };
 
@@ -456,12 +629,18 @@ const goToSelection = () => {
   if (!position) return;
 
   editor.value.commands.setTextSelection(position);
-
   const { node } = editor.value.view.domAtPos(
     editor.value.state.selection.anchor
   );
-  node instanceof HTMLElement &&
-    node.scrollIntoView({ behavior: "smooth", block: "center" });
+
+
+  sendMessageToNative({ event: 'goToSelection', data: node.offsetTop });
+
+  // const { node } = editor.value.view.domAtPos(
+  //   editor.value.state.selection.anchor
+  // );
+  // node instanceof HTMLElement &&
+  //   node.scrollIntoView({ behavior: "smooth", block: "center" });
 };
 
 
@@ -600,17 +779,26 @@ textarea {
   /* List styles */
   ul,
   ol {
-    padding: 0 1rem;
-    margin: 1.25rem 1rem 1.25rem 0.4rem;
+    padding: 0 0 0 1rem;
+    /* 只保留左侧内边距，上下右都为0 */
+    margin: 1.25rem 0 1.25rem 0.4rem;
+    /* 只保留上、下、左外边距，右外边距为0 */
 
     li p {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
+      margin-top: 0.375rem;
+      margin-bottom: 0.375rem;
     }
   }
 
   strong {
     font-weight: bold;
+  }
+
+  h2+blockquote {
+    background-color: #EBF4F7;
+    padding: 10px;
+    /* 添加内边距使背景更明显 */
+    border-radius: 4px;
   }
 
   /* Task list specific styles */
@@ -653,15 +841,15 @@ textarea {
   h5,
   h6 {
     line-height: 1.5;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
     text-wrap: pretty;
     font-weight: bold
   }
 
   h1,
   h2 {
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-top: 2.125rem;
+    margin-bottom: 0.75rem;
   }
 
   h1 {
@@ -673,7 +861,7 @@ textarea {
   }
 
   h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   h4,
