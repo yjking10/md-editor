@@ -1002,7 +1002,7 @@ textarea {
   display: flex;
   justify-content: center;
   /* 水平居中 */
-  padding: 24px 0 180px 0;
+  padding: 24px 20px 180px 20px;
 
 
   .comment-item {
